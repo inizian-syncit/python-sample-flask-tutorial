@@ -1,73 +1,32 @@
-variables:
-  # Azure Resource Manager connection created during pipeline creation
-  azureServiceConnectionId: 'Sandbox connection'
+# Python package
+# Create and test a Python package on multiple Python versions.
+# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
-  # Web app name
-  webAppName: 'webapp-14681'
+trigger:
+- main
 
-  # Agent VM image name
-  vmImageName: 'ubuntu-latest'
+pool:
+  vmImage: ubuntu-latest
+strategy:
+  matrix:
+    Python37:
+      python.version: '3.7'
+    Python312:
+      python.version: '3.12'
 
-  # Environment name
-  environmentName: 'webapp-14681'
-
-  # Project root folder.
-  projectRoot: $(python-sample-flask-tutorial)
-
-  # Python version: 3.7. Change this to match the Python runtime version running on your web app.
-  pythonVersion: '3.7'
-
-- job: BuildJob
-  pool:
-    vmImage: $(vmImageName)
-
-# - task: UsePythonVersion@0
-#     inputs:
-#       versionSpec: '$(3.7)'
-#       displayName: 'Use Python $(pythonVersion)'
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(python.version)'
+  displayName: 'Use Python $(python.version)'
 
 - script: |
-      python -m venv antenv
-      source antenv/bin/activate
-      python -m pip install --upgrade pip
-      pip install setup
-      pip install --target="./.python_packages/lib/site-packages" -r ./requirements.txt
-    workingDirectory: $(projectRoot)
-    displayName: "Install requirements"
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+  displayName: 'Install dependencies'
 
-- task: ArchiveFiles@2
-     displayName: 'Archive files'
-     inputs:
-       rootFolderOrFile: '$(projectRoot)'
-       includeRootFolder: false
-       archiveType: zip
-       archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
-       replaceExistingArchive: true
-
-   - upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
-     displayName: 'Upload package'
-     artifact: drop
-
-dependsOn: Build
-condition: succeeded()
-
-- deployment: DeploymentJob
-  pool:
-    vmImage: $(vmImageName)
-  environment: $(environmentName)
-
-strategy:
-    runOnce:
-      deploy:
-        steps:
-        - task: UsePythonVersion@0
-          inputs:
-            versionSpec: '$(pythonVersion)'
-          displayName: 'Use Python version'
-
-- task: AzureWebApp@1
-   displayName: 'Deploy Azure Web App'
-   inputs:
-      azureSubscription: $(azureServiceConnectionId)
-      appName: $(webAppName)
-      package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
+- script: |
+    pip install pytest pytest-azurepipelines
+    pytest
+  displayName: 'pytest'
