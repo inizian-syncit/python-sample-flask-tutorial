@@ -1,21 +1,21 @@
 variables:
-# Azure Resource Manager connection created during pipeline creation
-azureServiceConnectionId: 'Sandbox connection'
+  # Azure Resource Manager connection created during pipeline creation
+  azureServiceConnectionId: 'Sandbox connection'
 
-# Web app name
-webAppName: 'webapp-14681'
+  # Web app name
+  webAppName: 'webapp-14681'
 
-# Agent VM image name
-vmImageName: 'ubuntu-latest'
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
 
-# Environment name
-environmentName: 'webapp-14681'
+  # Environment name
+  environmentName: 'webapp-14681'
 
-# Project root folder.
-projectRoot: $(python-sample-flask-tutorial)
+  # Project root folder.
+  projectRoot: $(python-sample-flask-tutorial)
 
-# Python version: 3.7. Change this to match the Python runtime version running on your web app.
-pythonVersion: '3.7'
+  # Python version: 3.7. Change this to match the Python runtime version running on your web app.
+  pythonVersion: '3.7'
 
 - job: BuildJob
   pool:
